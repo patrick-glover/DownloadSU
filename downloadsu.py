@@ -24,7 +24,7 @@ def download_file(url: str, filename: str= '') -> None:
     logger.debug(f"Downloading '{url}', to '{filename}'")
 
     r = requests.get(url, stream=True)
-    with tempfile.TemporaryFile(delete=False) as file:
+    with tempfile.NamedTemporaryFile(delete=False) as file:
         for chunk in r.iter_content(chunk_size=1024):
             if chunk:
                 # filter out keep-alive new chunks
@@ -52,7 +52,7 @@ def make_filename(url: str, title: str) -> str:
         title = re.match("[0-9]+\.?\s(?P<title>[0-9a-zA-Z\s']+)", title).group('title')
 
         # Combine everything in format of S00E00 Title.extension
-        return f'S{regex.group("season").zfill(2)}E{regex.group("episode").zfill(2)} {title.capitalize()}.{extension}'
+        return f'S{regex.group("season").zfill(2)}E{regex.group("episode").zfill(2)} {title.title()}.{extension}'
     except AttributeError:
         # Oops, some regex failed!
         logger.warning(f"Failed to= make filename for url='{url}, title='{title}'")
@@ -84,7 +84,7 @@ def download_all(html: str, overwrite: bool) -> None:
 
         videos = season.find_all('source')
         stats['total_episodes'] += len(videos)
-        logger.debug(f"Video's found: {len(videos)}")
+        logger.debug(f"Videos found: {len(videos)}")
 
         # TODO: Maybe make it optional to save each season in a subdirectory
         if not os.path.isdir(season_title):
